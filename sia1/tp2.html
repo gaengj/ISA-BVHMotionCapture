@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr"><!--
+ Modèle de page pour les étagères du KIOSK
+ Date: Juin 2010
+ version : 1.0
+--><head>
+    <title>Synthèse d'Images et Animation : TP2</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!--<link rel="shortcut icon" type="image/vnd.microsoft.icon" href="Images/favicon.ico" />-->
+    <link rel="shortcut icon" type="image/png" href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Images/favicon.png">
+    <link rel="stylesheet" media="screen" type="text/css" href="tp2_files/kiosk.css">
+    <link rel="stylesheet" media="screen" type="text/css" href="tp2_files/content-kit.css">
+    <!-- katex -->
+    <link rel="stylesheet" type="text/css" href="tp2_files/katex.css">
+    <script src="tp2_files/katex.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <!-- Calque global pour le centrage -->
+    <div id="global">
+      <!-- En tete de la page -->
+      <div id="header">
+	<img src="tp2_files/logo-ensimag.png" alt="Ensimag" id="headerlogodroit" height="100" width="157">
+	<h1>SIA : GPURT spheres </h1>
+      </div>
+
+      <!-- Partie centrale (verticalement parlant) de la page -->
+      <div id="main">
+	<!-- Menu vers les grandes sections -->
+	<div id="menu">
+	  <ul class="liensmenu">
+            <li><a href="http://ensimag.grenoble-inp.fr/">
+		<img src="tp2_files/ensimag.png" alt="Web Ensimag"></a></li>
+            <li><a href="http://ensiwiki.ensimag.fr/">
+		<img src="tp2_files/wiki.png" alt="Ensiwiki"></a></li>
+            <li><a href="https://webmail.ensimag.fr/">
+		<img src="tp2_files/webmail.png" alt="Webmail"></a></li>
+            <li><a href="http://intranet.ensimag.fr/">
+		<img src="tp2_files/intranet-4.png" alt="Intranet"></a></li>
+            <li><a href="http://intranet.ensimag.fr/ZENITH/">
+		<img src="tp2_files/zenith.png" alt="Zenith"></a></li> 
+            <li><a href="https://edt.grenoble-inp.fr/2015-2016/enseignant/*/jsp/custom/modules/plannings/direct_planning.jsp">
+		<img src="tp2_files/ADE.png" alt="EDT"></a></li>
+	  </ul>
+	  <div id="menuprof">
+<!-- ********************* Debut du contenu du menu ************************ -->
+	    <h4>Enseignants :</h4>
+	      <br>
+	      <a href="mailto:Nicolas.Holzschuch@inria.fr">Nicolas Holzschuch</a>
+	      <br>
+          <a href="mailto:Lionel.Reveret@inria.fr">Lionel Reveret</a>
+		  <br>
+<!-- *********************** Fin du contenu du menu ************************ -->
+      </div>
+	</div>
+
+	<!-- Partie principale : à droite du menu -->
+	<div id="principal">
+	  
+	  <!-- Barre "d'adresse" -->
+	  <div id="nav">
+	    <div id="path">
+	      - <a href="http://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/index.php">Retour à la page du cours</a>
+	    </div>
+	    <div id="connect"></div>
+	  </div>
+
+	<!-- Contenu de la page -->
+	<div id="content">
+
+<!-- ====================== Debut du contenu de la page ==================== -->
+<h1>TP2 : Ray-Tracing on the GPU, part 1: spheres</h1>
+
+<div class="menu">
+» <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/tp1.html">TP1</a><br>
+» <b>TP2</b><br>
+» <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/tp3.html">TP3</a><br>
+» <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/projet.html">Projet</a>
+</div>
+
+
+<ul>
+    <li><a href="http://www.opengl.org/documentation/glsl/">Spécifications GLSL</a></li>
+    <li><a href="http://www.khronos.org/files/opengl44-quick-reference-card.pdf">OpenGL 4.4 API Quick Reference Card</a></li>
+</ul>
+    
+<h2>Introduction to Ray-Tracing on the GPU</h2>
+<p>In this practical, we are going to use the GPU for ray-tracing. In 
+this first step we will do the entire ray-tracing in the fragment shader
+ (the <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/tp3.html">next practical</a> will use compute shaders). 
+
+</p><p>The overall idea is simple: 
+</p><ul>
+	<li>Render a single quad, covering the entire screen. 
+	</li><li>Make sure the fragment shader receives a variable telling it which pixel it is currently working on.
+	</li><li>By inverse matrix multiplication (provided), find the origin and direction of the corresponding ray from the camera position.
+	</li><li>Intersect this ray with the scene geometry, and work out the visual aspect of the image from here
+</li></ul>
+<p>The source code in <span class="codehtml">8_gpgpu_spherert</span> contains the basis. You will have to fill in the main functions (tracing, ray-sphere intersection, etc). 
+
+</p><h2>Ray-Tracing a glass sphere</h2>
+
+<p>First, we assume a single sphere made of solid glass. The code 
+provided gives the origin and direction for the ray, for each pixel. 
+Your work is:
+</p><ol>
+	<li>Find the nearest intersection between this ray and the sphere, defined by its <span class="codehtml">center</span> and <span class="codehtml">radius</span>. 
+	</li><li>Compute the reflected and refracted rays, preferrably using GLSL functions.
+	</li><li>Modulate their intensities using Fresnel coefficients.
+	</li><li>If there is only one sphere, the reflected ray can only hit the environment (defined by the environment map <span class="codehtml">envMap</span>). You'll have to find the corresponding pixel in the environment map. 
+	</li><li>The refracted ray will hit the inside surface of the sphere. 
+Find the intersection point, compute the reflected and refracted rays.
+	</li><li>Again, the refracted ray has left the sphere, it can only hit the environment. 
+	</li><li>Follow the rays in this manner for a certain number of bounces (at least 4, preferrably a parameter).
+</li></ol>
+
+<center>
+<div style="width:480;height:360px">
+	<a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/Images/screenshot_spheres.png"><img src="tp2_files/screenshot_spheres.png" alt="Screen capture" height="360" width="480"></a>
+</div>
+Example of a single ray-traced sphere on the GPU. Note the multiple reflections. 
+</center>
+
+<p><b>Potential issues:</b> Make sure that you compute the refracted ray
+ with the correct index, and make sure you modulate the intensity of the
+ ray with the correct Fresnel term. <em>Hint:</em> if your Fresnel term depends on  <span class="codehtml">lightPosition</span>, it <em>is</em>
+ wrong. Avoid recursive functions if you can, as the call stack has 
+limited size. Make sure you compute the intersection with the 
+environment with the right function (most of the code you will find on 
+internet assumes a different parameterization for the environment map). 
+
+</p><p>For debugging purposes, use the <span class="codehtml">transparent</span> boolean (provided). If it is set to  <span class="codehtml">false</span>, the sphere should be metallic.
+
+
+</p><h2>Ray-tracing a bubble</h2>
+
+<p>We now consider a bubble: a thin spherical shell. In practice, it is 
+defined by two concentric spheres. The material inside the inner sphere 
+is the same as the material outside the larger sphere. 
+
+</p><p>Ray-tracing this bubble is almost the same as ray-tracing a glass
+ sphere, except that a ray that enters the outer sphere can either exit 
+towards the environment or enter the inner sphere. A ray that enters the
+ inner sphere will necessarily hit it again. The reflected ray stays 
+inside the inner sphere, the refracted ray will necessarily exit the 
+outer sphere. Again, follow the rays for a certain number of bounces (at
+ least 4). 
+
+</p><p>Make sure you use the proper Fresnel coefficients: pay attention 
+to the index of refraction before and after the interface you consider, 
+to the ray direction. 
+
+</p><center>
+<div style="width:480;height:360px">
+	<a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/Images/screenshot_bubbes.png"><img src="tp2_files/screenshot_bubbes.png" alt="Screen capture" height="360" width="480"></a>
+</div>
+Example of a single ray-traced bubble on the GPU. The scene is mostly upside-up.
+</center>
+
+<h2>Beyond the single sphere...</h2>
+
+<p>If you have finished the first two parts, you can try the following:
+</p><ul>
+<li>Add other spheres to the scene. Make sure they are non-intersecting,
+ so you can treat separately a ray inside a given sphere (it can only 
+intersect this specific sphere) and a ray in the environment. 
+</li><li>Animate these spheres or bubbles (in the CPU program), so they bounce up and down.
+</li><li>Add an infinite plane, and have the sphere reflect itself in the plane.
+</li><li>Modulate the normals of the infinite plane and texture the sphere so you have a planet reflected by an ocean.
+</li></ul>
+
+<!-- ====================== Fin du contenu de la page ====================== -->
+	</div>
+	</div>
+      </div>
+
+     <!-- Pied de page -->
+      <div id="footer">
+	<a href="mailto:Nicolas.Holzschuch@inria.fr" class="contact"><img src="tp2_files/mail_icon.gif" alt=""> Contact</a>	
+      </div>
+
+    </div>
+  
+
+</body></html>

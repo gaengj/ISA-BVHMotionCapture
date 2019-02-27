@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr"><!--
+ Modèle de page pour les étagères du KIOSK
+ Date: Juin 2010
+ version : 1.0
+--><head>
+    <title>Synthèse d'Images et Animation : Projet 1</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!--<link rel="shortcut icon" type="image/vnd.microsoft.icon" href="Images/favicon.ico" />-->
+    <link rel="shortcut icon" type="image/png" href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Images/favicon.png">
+    <link rel="stylesheet" media="screen" type="text/css" href="projet_files/kiosk.css">
+    <link rel="stylesheet" media="screen" type="text/css" href="projet_files/content-kit.css">
+    <!-- katex -->
+    <link rel="stylesheet" type="text/css" href="projet_files/katex.css">
+    <script src="projet_files/katex.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <!-- Calque global pour le centrage -->
+    <div id="global">
+      <!-- En tete de la page -->
+      <div id="header">
+	<img src="projet_files/logo-ensimag.png" alt="Ensimag" id="headerlogodroit" height="100" width="157">
+	<h1>SIA : Projet 1</h1>
+      </div>
+
+      <!-- Partie centrale (verticalement parlant) de la page -->
+      <div id="main">
+	<!-- Menu vers les grandes sections -->
+	<div id="menu">
+	  <ul class="liensmenu">
+            <li><a href="http://ensimag.grenoble-inp.fr/">
+		<img src="projet_files/ensimag.png" alt="Web Ensimag"></a></li>
+            <li><a href="http://ensiwiki.ensimag.fr/">
+		<img src="projet_files/wiki.png" alt="Ensiwiki"></a></li>
+            <li><a href="https://webmail.ensimag.fr/">
+		<img src="projet_files/webmail.png" alt="Webmail"></a></li>
+            <li><a href="http://intranet.ensimag.fr/">
+		<img src="projet_files/intranet-4.png" alt="Intranet"></a></li>
+            <li><a href="http://intranet.ensimag.fr/ZENITH/">
+		<img src="projet_files/zenith.png" alt="Zenith"></a></li> 
+            <li><a href="https://edt.grenoble-inp.fr/2015-2016/enseignant/*/jsp/custom/modules/plannings/direct_planning.jsp">
+		<img src="projet_files/ADE.png" alt="EDT"></a></li>
+	  </ul>
+	  <div id="menuprof">
+<!-- ********************* Debut du contenu du menu ************************ -->
+	    <h4>Enseignants :</h4>
+	      <br>
+	      <a href="mailto:Nicolas.Holzschuch@inria.fr">Nicolas Holzschuch</a>
+	      <br>
+          <a href="mailto:Lionel.Reveret@inria.fr">Lionel Reveret</a>
+		  <br>
+<!-- *********************** Fin du contenu du menu ************************ -->
+      </div>
+	</div>
+
+	<!-- Partie principale : à droite du menu -->
+	<div id="principal">
+	  
+	  <!-- Barre "d'adresse" -->
+	  <div id="nav">
+	    <div id="path">
+	      - <a href="http://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/index.php">Retour à la page du cours</a>
+	    </div>
+	    <div id="connect"></div>
+	  </div>
+
+	<!-- Contenu de la page -->
+	<div id="content">
+
+<!-- ====================== Debut du contenu de la page ==================== -->
+<h1>Projet 1 : Lancer de rayons interactif sur le GPU</h1>
+
+<div class="menu">
+» <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/TP1.html">TP1</a><br>
+» <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/tp2.html">TP2</a><br>
+» <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/tp3.html">TP3</a><br>
+» <b>Projet</b><br>
+</div>
+
+<ul>
+  <li><a href="http://www.opengl.org/documentation/glsl/">Spécifications GLSL 1.5</a></li>
+  <li><a href="http://www.khronos.org/files/opengl44-quick-reference-card.pdf">OpenGL 4.4 API Quick Reference Card</a></li>
+</ul>
+
+<h2>Modalités</h2>
+<ul>
+  <li>Le projet aura lieu la semaine du 13 au 17 novembre 2017, en salle E103.</li>
+  <li>Il sera réalisé par binôme.</li>
+  <li>Il devra fonctionner sur une machine des salles E103 ou E301.</li>
+</ul>
+
+<h2>Objectif</h2>
+<p>L'objectif du projet est de réaliser un moteur de rendu interactif, 
+de haute qualité, utilisant le lancer de rayons sur le GPU. Le rendu est
+ effectué à l'aide de shaders GLSL: vertex/fragment shaders et compute 
+shaders. 
+
+</p><p>Le projet s'inscrit dans la continuité des 3 premiers TP. À la fin du  <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/tp3.html">TP 3</a>,
+ vous avez (normalement) un moteur de rendu, utilisant le lancer de 
+rayons. En revanche, il est loin d'être interactif (plusieurs secondes 
+par image pour le lemming, 0,5 s pour la théière...) L'objectif du 
+projet est de le rendre plus efficace et interactif. 
+
+</p><p>Il y a plusieurs méthodes pour ça. Pour chacune, on donne son 
+niveau de difficulté (estimé) pour vous permettre de choisir en fonction
+ de vos capacités... et du temps restant. 
+
+</p><h2>Point de départ</h2>
+
+<p>Vous <em>devez</em> commencer par réaliser les  <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/TP1.html">TP1</a>, 
+<a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/tp2.html">TP2</a> et  <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/tp3.html">TP3</a>.
+ Vérifiez que vous avez exactement le même rendu pour le modèle de 
+matériau du TP1 et pour celui du TP3 (à part l'ombre, bien entendu). 
+
+
+</p><h2>Interactivité (facile)</h2>
+
+<p>Lorsqu'on interagit avec le modèle (en bougeant la caméra ou la 
+source de lumière), on a besoin de réactivité, éventuellement au 
+détriment de la qualité du rendu. 
+
+</p><p>Lorsque vous détectez que l'utilisateur interagit avec le modèle,
+ basculez le moteur de rendu vers le rendu très rapide réalisé lors du <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/TP1.html">TP1</a>, et revenez au lancer de rayons quand le déplacement est fini. 
+
+</p><p>On peut aussi augmenter graduellement le nombre de rebonds dans 
+le lancer de rayons: d'abord seulement l'éclairage direct, puis 
+l'éclairage indirect avec un rebond, puis avec deux rebonds... 
+
+</p><h2>Shadow mapping (moyen)</h2>
+
+<p>Lorsqu'on se déplace, l'ombre (calculée par le lancer de rayons) 
+disparait. Pour maintenir la continuité entre les deux modes de rendu, 
+il faut utiliser le <em>shadow mapping</em>. La carte de profondeur est stockée dans <span class="codehtml">uniform sampler2D shadowMap</span>. Le shader qui la calcule est <em>déjà</em> écrit. 
+
+</p><p>Il vous faut calculer les matrices de transformation (de l'espace
+ monde vers l'espace lié à la source lumineuse): transformation et 
+perspective, et les passer aux deux shaders : celui qui calcule la 
+shadow map et celui qui calcule l'éclairage. 
+
+</p><p>Ensuite, à vous d'utiliser la shadow map pour calculer si un point est dans l'ombre ou non. 
+
+</p><h2>Bounding Volume Hierarchy (difficile)</h2>
+
+<p>Le moyen le plus simple d'accélérer le lancer de rayons est d'utiliser une <em>Bounding Volume Hierarchy</em> (vue en cours). 
+
+</p><p>La construction se fait sur le CPU, lors du chargement du modèle. Le parcours se fait sur le GPU, à chaque rendu. 
+
+</p><h2>Rendu en alternance (facile)</h2>
+
+<p>Uane autre façon d'accélérer le lancer de rayons (qui peut être 
+combinée avec la précédente) et d'augmenter l'interactivité est de faire
+ le rendu pour une partie des pixels seulement à chaque image. 
+
+</p><p>Si fait le rendu pour seulement 1/4 des pixels (ou 1/9), chaque 
+passe de rendu sera 4x (ou 9x) plus rapide (même si le temps pour une 
+image complète reste le même). L'idée est de grouper les pixels en 
+carrés de 2x2 ou 3x3, et de faire le rendu pour un des pixels du carré à
+ chaque étape. 
+
+</p><p>Le pixel qu'on est en train de traiter est un paramètre  <span class="codehtml">uniform</span> du Compute shader. Pour les autres, on ne modifie pas la texture.
+
+</p><p>Réfléchissez à la façon de parcourir le carré. "En ligne" n'est pas forcément la meilleure solution. 
+
+</p><h2>Caustiques (moyen)</h2>
+
+<p>Pour l'instant, on ne calcule que le lancer de rayon en partant de 
+l'oeil. Il manque une partie des effets lumineux, correspondant aux 
+rayons qui ont été concentrés par une réflexion spéculaire sur le 
+modèle. Pour les calculer, il faut tracer les rayons en partant de la 
+source lumineuse, et les stocker dans une structure intermédiaire avant 
+de les afficher. 
+
+</p><p>Dans un premier temps, on va se limiter aux caustiques sur le sol de la scène. On plaque une texture (une nouvelle, <span class="codehtml">caustics</span>)
+ sur le sol, qui contient le résultat de l'éclairage direct avec les 
+caustiques, et on va la calculer en utilisant un Compute Shader. 
+
+</p><p>On positionne une caméra sur la source lumineuse, telle que 
+l'objet soit inclus dans la pyramide de vue (et que la pyramide de vue 
+soit la plus petite possible. On trace un rayon pour chaque pixel de 
+cette caméra, et on le fait rebondir sur l'objet jusqu'à ce qu'il 
+atteigne le sol, et on calcule la position du point d'intersection avec 
+le sol. 
+
+</p><p>On stocke dans la texture <span class="codehtml">caustics</span> le résultat qu'on vient de calculer (en additionnant avec la valeur déjà stockée). Notez que ce calcul exige de <em>lire</em> et d'<em>écrire</em> dans la texture de résultat, puisque plusieurs rayons peuvent aboutir au même endroit, et qu'il faut additionner leurs effets. 
+
+</p><p>Lors du rendu, on accède à cette texture et on additionne le 
+résultat à l'éclairage qu'on est en train de calculer. Réfléchissez pour
+ éviter d'additionner deux fois la même valeur d'éclairage lors du rendu
+ (en particulier l'éclairage direct ne doit être présent qu'une seule 
+fois). 
+
+</p><p><b>Variante :</b> on calcule l'éclairage venant de la source sur 
+une texture qui couvre la vue "caméra" de la scène. Le problème est 
+qu'on ne sait pas, quand on calcule la valeur pour un point, s'il est 
+visible ou non. Il faut aussi stocker la profondeur (vue de la caméra) 
+du point qu'on est en train de calculer, et remplacer (au lieu 
+d'additionner) si le nouveau point est plus proche de la caméra. 
+
+</p><h2>Évaluation</h2>
+<ul>
+  <li>Le projet sera évalué par une soutenance lors de la séance n°6 du 08/12/2017. </li>
+  <li>Cette soutenance durera 10 min par groupe. </li>
+  
+</ul>
+
+<!-- ====================== Fin du contenu de la page ====================== -->
+	</div>
+	</div>
+      </div>
+
+ 
+     <!-- Pied de page -->
+      <div id="footer">
+	<a href="mailto:Nicolas.Holzschuch@inria.fr" class="contact"><img src="projet_files/mail_icon.gif" alt=""> Contact</a>	
+      </div>
+
+    </div>
+  
+
+</body></html>

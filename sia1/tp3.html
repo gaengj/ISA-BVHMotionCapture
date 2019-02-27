@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr"><!--
+ Modèle de page pour les étagères du KIOSK
+ Date: Juin 2010
+ version : 1.0
+--><head>
+    <title>Synthèse d'Images et Animation : TP3</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!--<link rel="shortcut icon" type="image/vnd.microsoft.icon" href="Images/favicon.ico" />-->
+    <link rel="shortcut icon" type="image/png" href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Images/favicon.png">
+    <link rel="stylesheet" media="screen" type="text/css" href="tp3_files/kiosk.css">
+    <link rel="stylesheet" media="screen" type="text/css" href="tp3_files/content-kit.css">
+    <!-- katex -->
+    <link rel="stylesheet" type="text/css" href="tp3_files/katex.css">
+    <script src="tp3_files/katex.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <!-- Calque global pour le centrage -->
+    <div id="global">
+      <!-- En tete de la page -->
+      <div id="header">
+	<img src="tp3_files/logo-ensimag.png" alt="Ensimag" id="headerlogodroit" height="100" width="157">
+	<h1>SIA : GPURT Triangle meshes </h1>
+      </div>
+
+      <!-- Partie centrale (verticalement parlant) de la page -->
+      <div id="main">
+	<!-- Menu vers les grandes sections -->
+	<div id="menu">
+	  <ul class="liensmenu">
+            <li><a href="http://ensimag.grenoble-inp.fr/">
+		<img src="tp3_files/ensimag.png" alt="Web Ensimag"></a></li>
+            <li><a href="http://ensiwiki.ensimag.fr/">
+		<img src="tp3_files/wiki.png" alt="Ensiwiki"></a></li>
+            <li><a href="https://webmail.ensimag.fr/">
+		<img src="tp3_files/webmail.png" alt="Webmail"></a></li>
+            <li><a href="http://intranet.ensimag.fr/">
+		<img src="tp3_files/intranet-4.png" alt="Intranet"></a></li>
+            <li><a href="http://intranet.ensimag.fr/ZENITH/">
+		<img src="tp3_files/zenith.png" alt="Zenith"></a></li> 
+            <li><a href="https://edt.grenoble-inp.fr/2015-2016/enseignant/*/jsp/custom/modules/plannings/direct_planning.jsp">
+		<img src="tp3_files/ADE.png" alt="EDT"></a></li>
+	  </ul>
+	  <div id="menuprof">
+<!-- ********************* Debut du contenu du menu ************************ -->
+	    <h4>Enseignants :</h4>
+	      <br>
+	      <a href="mailto:Nicolas.Holzschuch@inria.fr">Nicolas Holzschuch</a>
+	      <br>
+          <a href="mailto:Lionel.Reveret@inria.fr">Lionel Reveret</a>
+		  <br>
+<!-- *********************** Fin du contenu du menu ************************ -->
+      </div>
+	</div>
+
+	<!-- Partie principale : à droite du menu -->
+	<div id="principal">
+	  
+	  <!-- Barre "d'adresse" -->
+	  <div id="nav">
+	    <div id="path">
+	      - <a href="http://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/index.php">Retour à la page du cours</a>
+	    </div>
+	    <div id="connect"></div>
+	  </div>
+
+	<!-- Contenu de la page -->
+	<div id="content">
+
+<!-- ====================== Debut du contenu de la page ==================== -->
+<h1>TP3 : Ray-Tracing on the GPU, part 2: meshes</h1>
+
+<div class="menu">
+» <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/tp1.html">TP1</a><br>
+» <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/tp2.html">TP2</a><br>
+» <b>TP3</b><br>
+» <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/projet.html">Projet</a>
+</div>
+
+<ul>
+  <li><a href="http://www.opengl.org/documentation/glsl/">Spécifications GLSL</a></li>
+  <li><a href="http://www.khronos.org/files/opengl44-quick-reference-card.pdf">OpenGL 4.4 API Quick Reference Card</a></li>
+</ul>
+
+<h2>Using Compute Shaders</h2>
+
+<p>We continue using the GPU for ray-tracing. This time, we want to 
+ray-trace a full triangle mesh. For easier data transfer, we will use 
+the Compute Shaders. 
+
+</p><p>The overall idea is: 
+</p><ul>
+	<li>The compute shader is called once per pixel.
+	</li><li>The triangle mesh for the model is sent to the compute shader using SSBO (<span class="codehtml">vertices</span>, <span class="codehtml">colors</span>, <span class="codehtml">normals</span> and <span class="codehtml">indices</span>). 
+	</li><li>The function <span class="codehtml">main</span> computes the starting point and direction of the primary ray, and calls <span class="codehtml">trace(eye, direction)</span>.
+	</li><li>The rest is up to you. Given the level of the assignment, I 
+suggest doing things progressively. Also, start with a scene with a low 
+polygon count (such as the teapot). 
+	</li><li>The result of the compute shader is stored in a texture (<span class="codehtml">framebuffer</span>)
+ and this texture is displayed by the vertex and fragment shaders. This 
+part is already written, as well as the code sending data to the SSBOs. 
+</li></ul>
+
+<h2>Ray-bounding box intersection</h2>
+
+<p>The first task is to check whether the ray intersects the object bounding box. Bounding box coordinates are given by <span class="codehtml">bbmin</span> and <span class="codehtml">bbmax</span>. 
+
+</p><p>Output the fragment color as red if the ray intersects the bounding box, gray otherwise. This should help for debugging.
+
+</p><h2>Ray-triangle mesh intersection</h2>
+<p>For all the rays that intersect the bounding box, you have to test them with every triangles in the mesh. Write the  <span class="codehtml">intersectTriangle</span> function: input is the ray <span class="codehtml">origin</span> and <span class="codehtml">direction</span> and the triangle index. Output is a <span class="codehtml">boolean</span> (did the ray intersect the triangle or not) and a <span class="codehtml">vec4</span> containing the barycentric coordinates (alpha, beta, 1-alpha-beta) and the distance along the ray (lambda). 
+
+</p><p>Triangles are defined by their position in the index table <span class="codehtml">p</span> and accessed using: 
+<span class="codehtml">v0 = vertices[indices[ptr]];</span>,  <span class="codehtml">v1 = vertices[indices[ptr + 1]];</span> and <span class="codehtml">v2 = vertices[indices[ptr + 2]];</span>. 
+
+</p><p>For the ray-triangle intersection, use the Möller-Trumbore algorithm we saw in class. 
+
+</p><p>Again, for debugging, output the fragment color as red if the ray intersects a triangle, gray otherwise. 
+
+</p><h2>Shadow rays</h2>
+
+<p>Now that you have a working function for ray-triangle intersection, 
+we are going to add color to the scene. For each intersection point 
+found, send a ray towards the light source. 
+</p><ul>
+	<li>If it intersects something, this point is in shadow. Use only ambiant lighting. 
+	</li><li>If it does not intersect something, compute the full illumination model (ambiant, diffuse and specular). Reuse code from <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/TP1.html">TP1</a>. 
+	</li><li>Remember to interpolate the normals using the barycentirc coordinates computed in the previous step. 
+</li></ul>
+
+<p>At this stage, you should have an object, with illumination and shadow, similar to the picture produces in <a href="https://chamilo.grenoble-inp.fr/courses/ENSIMAG5MMSIA7/document/Shaders/TP1.html">TP1</a>.
+ Switching from the shader you wrote for TP1 to the one you just wrote 
+should not change the aspect of the object, except that the ground 
+disappears.
+
+
+</p><h2>Ground</h2>
+
+<p>Now, add an infinite textured plane as the ground (or very large). 
+Treat it as a second mesh, with a single component (the infinite plane).
+ The plane is located on the <span class="codehtml">y</span> axis, at a distance <span class="codehtml">groundDistance</span> from the origin. 
+
+</p><p>The color of the plane comes from the texture <span class="codehtml">colorTexture</span>;
+ the shading comes from the illumination function you just computed. You
+ should now have the object projecting a shadow on the ground and on 
+itself. 
+
+</p><h2>Indirect Lighting</h2>
+
+<p>We are now ready for indirect lighting. Since we do not want to 
+recurse, we are going to store ray intersections in an array, follow the
+ rays, then compute indirect illumination. 
+
+</p><ul>
+	<li>Define the maximum number of bounces. Allocate an array of struct 
+to contain the intersections encountered by the ray (origin, direction, 
+point hit, normal, color).
+	</li><li>Forward tracing: for each ray, compute the intersection, store the intersection, compute the bouncing ray, iterate.
+	</li><li>Backward color computing: Once you have followed the rays 
+until the leave the scene or hit the maximum number of bounces, you can 
+compute the color. Start by computing the color for the last point hit 
+(the one further from the eye), using a shadow ray, then move down the 
+stack. At each point, you have to compute the direct lighting using a 
+shadow ray, and combine it with indirect lighting (what you have 
+computed so far). 
+	</li><li>You have to think carefully about how to combine direct and indirect lighting. 
+</li></ul>
+
+<!-- ====================== Fin du contenu de la page ====================== -->
+	</div>
+	</div>
+      </div>
+
+     <!-- Pied de page -->
+      <div id="footer">
+	<a href="mailto:Nicolas.Holzschuch@inria.fr" class="contact"><img src="tp3_files/mail_icon.gif" alt=""> Contact</a>	
+      </div>
+
+    </div>
+  
+
+</body></html>

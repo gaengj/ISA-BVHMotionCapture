@@ -1,0 +1,301 @@
+#version 430 core
+
+layout(binding = 0, rgba32f) uniform writeonly image2D framebuffer;
+
+uniform sampler2D colorTexture;
+uniform mat4 mat_inverse;
+uniform mat4 persp_inverse;
+uniform float lightIntensity;
+uniform vec3 lightPosition;
+uniform float shininess;
+uniform float eta;
+uniform vec3 bbmin;
+uniform vec3 bbmax;
+uniform float radius;
+uniform float groundDistance;
+uniform vec3 center;
+
+#define MAX_SCENE_BOUNDS    10.0
+#define EPS                 0.000001
+
+
+struct hitinfo_t {
+    vec4 t;
+    int hit_vptr;
+};
+
+layout (std430, binding = 1) buffer Vertices
+{
+    vec4 vertices[];
+};
+
+layout (std430, binding = 2) buffer Normals
+{
+    vec4 normals[];
+};
+
+layout (std430, binding = 3) buffer Colors
+{
+    vec4 colors[];
+};
+
+layout (std430, binding = 4) buffer Meshes
+{
+    int indices[];
+};
+
+float F(float cos_theta){
+    float Fs,Fp;
+    float c_i;
+    if ((pow(eta, 2) - 1 + pow(cos_theta, 2)) > 0) {
+      c_i = sqrt(pow(eta, 2) - 1 + pow(cos_theta, 2));
+      Fs = pow( (cos_theta - c_i)/(cos_theta + c_i) , 2);
+      float eta_carre = eta * eta;
+      Fp = pow( (eta_carre*cos_theta - c_i)/(eta_carre*cos_theta + c_i) , 2);
+    }
+    else {
+      Fs = 1;
+      Fp = 1;
+    }
+    return (Fs + Fp)/2;
+}
+
+bool intersectBoundingBox(vec4 origin, vec4 dir) {
+    vec3 tmin = vec3((bbmin - origin.xyz)/dir.xyz);
+    vec3 tmax = vec3((bbmax - origin.xyz)/dir.xyz);
+    float eps = 0.001;
+    float tmp = 0.0;
+
+    if (tmin.x > tmax.x){
+
+      tmp = 0.0;
+
+      tmp = tmin.x;
+      tmin.x = tmax.x;
+      tmax.x = tmp;
+    }
+
+    if (tmin.y > tmax.y + eps){
+
+      tmp = 0.0;
+
+      tmp = tmin.y;
+      tmin.y = tmax.y;
+      tmax.y= tmp;
+    }
+
+    if ((tmin.x > tmax.y + eps) || (tmin.y > tmax.x + eps)) {
+      return false;
+    }
+
+    if (tmin.y > tmin.x + eps){
+      tmin.x = tmin.y;
+    }
+
+    if (tmax.y < tmax.x + eps){
+      tmax.x = tmax.y;
+    }
+
+    if (tmin.z > tmax.z + eps){
+
+      tmp = 0.0;
+
+      tmp = tmin.z;
+      tmin.z = tmax.z;
+      tmax.z = tmp;
+    }
+
+    if ((tmin.x > tmax.z + eps) || (tmin.z > tmax.x + eps)){
+      return false;
+    }
+
+    if (tmin.z > tmin.x + eps){
+      tmin.x = tmin.z;
+    }
+
+    if (tmax.z < tmax.x + eps){
+      tmax.x = tmax.z;
+    }
+
+    return true;
+}
+
+bool intersectTriangle(vec4 origin, vec4 dir, int ptr, out vec4 dist)
+{
+	// TODO
+    vec4 v0 = vertices[indices[ptr]];
+    vec4 v1 = vertices[indices[ptr + 1]];
+    vec4 v2 = vertices[indices[ptr + 2]];
+    vec3 e2 = (v2 - v0).xyz;
+    vec3 e1 = (v1 - v0).xyz;
+    vec3 t = (origin - v0).xyz;
+    vec3 q = cross(t,e1);
+    vec3 p = cross(dir.xyz, e2);
+    float det = dot(p, e1);
+    float inv_det, alpha, beta, lambda;
+    float eps = 0.001;
+
+    if (abs(det) < eps){
+      return false;
+    }
+
+    else {
+      inv_det = 1/det;
+      alpha = inv_det * dot(p, t);
+      //verification de alpha entre 0 et 1
+      if (alpha < eps || alpha > (1+eps)){
+        return false;
+      }
+      //verification de beta entre 0 et 1-alpha
+      beta = inv_det * dot(q, dir.xyz);
+      if (beta < eps || alpha + beta > (1+eps)){
+        return false;
+      }
+      lambda = inv_det * dot(q, e2);
+      if (lambda < eps){
+        return false;
+      }
+
+      dist.x = lambda;
+      dist.y = alpha;
+      dist.z = beta;
+      dist.w = 1 - alpha - beta;
+      return true;
+    }
+}
+
+vec4 interpolateNormal(hitinfo_t h)
+{
+	// TODO
+    return normalize(h.t.w * normals[indices[h.hit_vptr]] + h.t.y * normals[indices[h.hit_vptr+1]] + h.t.z * normals[indices[h.hit_vptr+2]]);
+}
+
+vec4 interpolateColor(hitinfo_t h)
+{
+	// TODO
+	// return normalize(colors[indices[h.hit_vptr]]);
+  return normalize(h.t.w * colors[indices[h.hit_vptr]] + h.t.y * colors[indices[h.hit_vptr+1]] + h.t.z * colors[indices[h.hit_vptr+2]]);
+}
+
+bool isIntersected(vec4 origin, vec4 dir, out hitinfo_t h)
+{
+    vec4 dist; // stores distance + barycentric coord
+	bool hit = false;
+	h.t.x = radius * MAX_SCENE_BOUNDS;
+  float min = 1000000000;
+
+  //test si ça touche le sol
+  vec4 Q,n;
+  Q = vec4(0,-groundDistance,0,1);
+  n = vec4(0,1,0,0);
+  vec4 PQ = Q - origin;
+  float denom = dot(dir,n);
+  if (denom < -0.0001){
+    float lambda = dot(PQ,n)/denom;
+    if (lambda > 0.001){
+      h.t.x = lambda;
+      h.hit_vptr = -1;
+      min = h.t.x;
+      hit = true;
+    }
+  }
+
+
+
+  //test si ça touche un triangle
+	if(intersectBoundingBox(origin, dir)) {
+		for(int j = 0; j < indices.length(); j += 3) {
+			if(intersectTriangle(origin, dir, j, dist)) {
+				// TODO
+        if (dist.x < min){
+          h.t = dist; //calculer point le plus proche
+          h.hit_vptr = j;
+          min = dist.x;
+          hit = true;
+        }
+			}
+		}
+	}
+	return hit;
+}
+
+const int MAX_TRACE = 1;
+
+
+vec4 trace(vec4 origin, vec4 dir)
+{
+	// TODO: trace a ray in the scene, see what it intersects, bounce around
+
+    hitinfo_t h,p;
+    vec4 retour, light, Ca, Cd, Cs;
+    light = vec4(lightPosition,0);
+    if(isIntersected(origin, dir, h)){
+      //si l'intersection est le point du sol
+      if(h.hit_vptr == -1){
+        vec4 inter_plane = origin + h.t.x * dir;
+        retour = normalize(light - inter_plane);
+        p = h;
+
+        if(isIntersected(inter_plane,retour,p)){
+          Ca = 0.1 * lightIntensity * texture2D(colorTexture,inter_plane.xz/100);
+          return Ca;
+        }
+        
+        else{
+          return texture2D(colorTexture,inter_plane.xz/100);
+        }
+      }
+
+      else{
+        vec4 inter = h.t.w * vertices[indices[h.hit_vptr]] + h.t.y * vertices[indices[h.hit_vptr+1]] + h.t.z * vertices[indices[h.hit_vptr+2]];
+        retour = normalize(light - inter);
+        p = h;
+
+        if(isIntersected(inter,retour,p)){
+          Ca = 0.1 * lightIntensity * interpolateColor(h);
+          return Ca;
+        }
+
+        else{
+          vec4 n = interpolateNormal(h);
+          vec4 C = interpolateColor(h);
+          vec4 halfVector = normalize(dir + retour);
+          float cos_thetaD = dot(halfVector, retour);
+          float F = F(cos_thetaD);
+
+          Ca = 0.1 * lightIntensity * C;
+          Cd = 0.5 * C * lightIntensity * max(0, dot(n, retour));
+          Cs = F * C * lightIntensity * pow(max(0, dot(n, halfVector)), shininess);
+          return Ca + Cd + Cs;
+        }
+      }
+    }
+    else {
+      return vec4(0.2);
+    }
+}
+
+layout (local_size_x = 8, local_size_y = 8) in;
+void main(void) {
+    ivec2 pix = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 size = imageSize(framebuffer);
+    if (pix.x >= size.x || pix.y >= size.y) {
+        return;
+    }
+    vec2 pos = pix / (size - vec2(0.5,0.5));
+    // pos in [0,1]^2 Need it in [-1,1]^2:
+    pos = 2 * pos - vec2(1.,1.);
+
+    // Step 1: I need pixel coordinates.
+    vec4 worldPos = vec4(pos.x, pos.y, 1.0, 1.0);
+    worldPos = persp_inverse * worldPos;
+    worldPos /= worldPos.w;
+    worldPos.w = 0;
+    worldPos = normalize(worldPos);
+    // Step 2: ray direction:
+    vec4 dir = normalize((mat_inverse * worldPos));
+    vec4 eye = (mat_inverse * vec4(0, 0, 0, 1));
+    vec4 color = trace(eye, dir);
+
+    imageStore(framebuffer, pix, color);
+}
